@@ -151,8 +151,8 @@ class UNet():
         patience=300, verbose=1, mode='min'),
             ModelCheckpoint('weights/' + 'U-net.weights',
             monitor='val_loss', save_best_only=True, verbose=1),
-            TensorBoard(log_dir='./logs', histogram_freq=10,write_grads=True, batch_size=3, 
-            write_graph=True, write_grads=False, write_images=True)]
+            TensorBoard(log_dir='./logs',write_grads=True, batch_size=3, 
+            write_graph=True, write_images=True)]
     
         self.net.fit_generator(generator=gen_trn, steps_per_epoch=10, epochs=epochs,
                                validation_data=gen_val, validation_steps=10, verbose=1, callbacks=cb)
