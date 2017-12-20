@@ -1,4 +1,4 @@
-# Dilated-U-net
+# Dilated-U-net - Stacked Electron Microscopy (EM) segmentation.
 
 Dilated/Atrous convolutions have the ability to increase the receptive field of a network expontentially. Therefore, whilst segmentation requires fine-grain classification accuracy (pixel-wise level), the ability of a network to learn features based on a wide receptive field capturing alot of the input space could be beneficial.
 
