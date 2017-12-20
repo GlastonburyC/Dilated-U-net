@@ -6,5 +6,5 @@ Here I test a standard U-net implementation against a U-net architecture whose b
 
 The dataset used is the ISBI-2012 stack of electron-microscopy images (n=30) - Representing a challenge to learn from so little data.
 
-![Alt Text](images/train-volume-p1c1pmolsqq5ugdl17011cu4skf.gif =256x256))
+![](images/train-volume-p1c1pmolsqq5ugdl17011cu4skf.gif =256x256)
 
