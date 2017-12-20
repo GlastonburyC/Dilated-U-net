@@ -109,17 +109,17 @@ class UNet():
             else:
                 up3 = UpSampling2D((2, 2))(dilate6)
         else:
-            dilate1 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=1)(down3pool)
+            dilate1 = Conv2D(176,3, activation='relu', padding='same')(down3pool)
             b7 = BatchNormalization()(dilate1)
-            dilate2 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=2)(b7)
+            dilate2 = Conv2D(176,3, activation='relu', padding='same')(b7)
             b8 = BatchNormalization()(dilate2)
-            dilate3 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=4)(b8)
+            dilate3 = Conv2D(176,3, activation='relu', padding='same')(b8)
             b9 = BatchNormalization()(dilate3)
-            dilate4 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=8)(b9)
+            dilate4 = Conv2D(176,3, activation='relu', padding='same')(b9)
             b10 = BatchNormalization()(dilate4)
-            dilate5 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=16)(b10)
+            dilate5 = Conv2D(176,3, activation='relu', padding='same')(b10)
             b11 = BatchNormalization()(dilate5)
-            dilate6 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=32)(b11)
+            dilate6 = Conv2D(176,3, activation='relu', padding='same')(b11)
             if addition ==1:
                 dilate_all_added = add([dilate1, dilate2, dilate3, dilate4, dilate5, dilate6])
                 up3 = UpSampling2D((2, 2))(dilate_all_added)
