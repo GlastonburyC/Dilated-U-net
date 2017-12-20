@@ -23,8 +23,6 @@ from keras.optimizers import RMSprop
 from keras.losses import binary_crossentropy
 from clr_callback import *
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
 def dice_coef(y_true, y_pred):
     smooth = 1.0
     y_true_flat = K.flatten(y_true)
@@ -67,7 +65,7 @@ class UNet():
                 montage_msks[y0:y1, x0:x1] = msks[idx]
         return montage_imgs, montage_msks
 
-    def compile(self, loss=bce_dice_loss,classes=2):
+    def compile(self,classes,dilate,dilate_rate,loss=bce_dice_loss):
         K.set_image_dim_ordering('tf')
         x = inputs = Input(shape=(512,512), dtype='float32')
         x = Reshape((512,512) + (1,))(x)
@@ -75,21 +73,21 @@ class UNet():
         down1 = Conv2D(44, 3, activation='relu', padding='same')(x)
         b1 = BatchNormalization()(down1)
         b1 = Dropout(rate=0.3)(b1)
-        down1 = Conv2D(44, 3, activation='relu', padding='same')(b1)
+        down1 = Conv2D(44, 3, activation='relu', padding='same',dilation_rate=dilate_rate)(b1)
         b2 = BatchNormalization()(down1)
         down1pool = MaxPooling2D((2, 2), strides=(2, 2))(b2)
         down1pool = Dropout(rate=0.3)(down1pool)
         down2 = Conv2D(88, 3, activation='relu', padding='same')(down1pool)
         b3 = BatchNormalization()(down2)
-        down2 = Conv2D(88, 3, activation='relu', padding='same')(b3)
+        down2 = Conv2D(88, 3, activation='relu', padding='same',dilation_rate=dilate_rate)(b3)
         b4 = BatchNormalization()(down2)
         down2pool = MaxPooling2D((2,2), strides=(2, 2))(b4)
         down2pool = Dropout(rate=0.3)(down2pool)
         down3 = Conv2D(176, 3, activation='relu', padding='same')(down2pool)
         b5 = BatchNormalization()(down3)
-        down3 = Conv2D(176, 3, activation='relu', padding='same')(b5)
+        down3 = Conv2D(176, 3, activation='relu', padding='same',dilation_rate=dilate_rate)(b5)
         b6 = BatchNormalization()(down3)
-        down3pool = MaxPooling2D((2, 2), strides=(2, 2))(down3)
+        down3pool = MaxPooling2D((2, 2), strides=(2, 2))(b6)
         down3pool = Dropout(rate=0.3)(down3pool)
 
         if dilate == 1:
@@ -110,8 +108,19 @@ class UNet():
 
             up3 = UpSampling2D((2, 2))(dilate_all_added)
         else:
-            dilate1 = Conv2D(176,3, activation='relu', padding='same')(down3pool)
-            up3 = UpSampling2D((2, 2))(dilate1)
+            dilate1 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=1)(down3pool)
+            b7 = BatchNormalization()(dilate1)
+            dilate2 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=2)(b7)
+            b8 = BatchNormalization()(dilate2)
+            dilate3 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=4)(b8)
+            b9 = BatchNormalization()(dilate3)
+            dilate4 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=8)(b9)
+            b10 = BatchNormalization()(dilate4)
+            dilate5 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=16)(b10)
+            b11 = BatchNormalization()(dilate5)
+            dilate6 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=32)(b11)
+            dilate_all_added = add([dilate1, dilate2, dilate3, dilate4, dilate5, dilate6])
+            up3 = UpSampling2D((2, 2))(dilate_all_added)
         up3 = Conv2D(88,3, activation='relu', padding='same')(up3)
         up3 = concatenate([down3, up3])
         b12 = BatchNormalization()(up3)
@@ -127,7 +136,7 @@ class UNet():
         b14 = Dropout(rate=0.3)(b14)
         up2 = Conv2D(44,3, activation='relu', padding='same')(b14)
         b15 = BatchNormalization()(up2)
-        up2 = Conv2D(44,3, activation='relu', padding='same')(up2)
+        up2 = Conv2D(44,3, activation='relu', padding='same')(b15)
 
         up1 = UpSampling2D((2, 2))(up2)
         up1 = Conv2D(22,3, activation='relu', padding='same')(up1)
@@ -146,16 +155,16 @@ class UNet():
         return
 
 
-    def train(self,lr,max_lr):
+    def train(self,lr,max_lr,weight_path):
         gen_trn = self.batch_generator(imgs=X_train, msks=Y_train, batch_size=3)
         gen_val = self.batch_generator(imgs=X_val, msks=Y_val, batch_size=3)
         clr_triangular = CyclicLR(mode='triangular')
         clr_triangular._reset(new_base_lr=lr, new_max_lr=max_lr)
         cb = [clr_triangular,EarlyStopping(monitor='val_loss', min_delta=1e-3,
         patience=300, verbose=1, mode='min'),
-            ModelCheckpoint('weights/' + 'U-net.weights',
+            ModelCheckpoint(weight_path,
             monitor='val_loss', save_best_only=True, verbose=1),
-            TensorBoard(log_dir='./logs', histogram_freq=10,write_grads=True, batch_size=3,
+            TensorBoard(log_dir='./logs', batch_size=3,
             write_graph=True, write_images=True)]
 
         self.net.fit_generator(generator=gen_trn, steps_per_epoch=10, epochs=epochs,
@@ -196,6 +205,9 @@ if __name__ == "__main__":
     arg_list.add_argument('--image_path', help='Path to stack of training images', default='images', type=str)
     arg_list.add_argument('--mask_path', help='Path to stack of ground truth annotations', default='masks', type=str)
     arg_list.add_argument('--dilate', help='Add dilated convolutions', default='1', type=int)
+    arg_list.add_argument('--weight_path', help='path to save weights', default='weights/dilated_unet', type=str)
+    arg_list.add_argument('--dilate_rate', help='rate of dilation in downsampling convs', default='1', type=int)
+    arg_list.add_argument('--gpu', help='specify the GPU to use', default='0', type=str)
 
     args = vars(arg_list.parse_args())
 
@@ -206,11 +218,15 @@ if __name__ == "__main__":
     image_path = args['image_path']
     mask_path = args['mask_path']
     dilate = args['dilate']
+    dilate_rate = args['dilate_rate']
+    weight_path = args['weight_path']
+    gpu = args['gpu']
+    os.environ["CUDA_VISIBLE_DEVICES"] = gpu
     model_init = UNet()
     (X_train, Y_train) = model_init.load_data(nb_cols=5,nb_rows=6,
     image_path=image_path,mask_path=mask_path)
 
     (X_val, Y_val) = model_init.load_data(nb_cols=6,nb_rows=5,
     image_path=image_path,mask_path=mask_path)
-    model_init.compile()
-    model_init.train(lr=lr,max_lr=max_lr)
+    model_init.compile(classes=2,dilate=dilate,dilate_rate=dilate_rate)
+    model_init.train(lr=lr,max_lr=max_lr,weight_path=weight_path)
