@@ -65,7 +65,7 @@ class UNet():
                 montage_msks[y0:y1, x0:x1] = msks[idx]
         return montage_imgs, montage_msks
 
-    def compile(self,classes,dilate,dilate_rate,loss=bce_dice_loss):
+    def compile(self,addition,classes,dilate,dilate_rate,loss=bce_dice_loss):
         K.set_image_dim_ordering('tf')
         x = inputs = Input(shape=(512,512), dtype='float32')
         x = Reshape((512,512) + (1,))(x)
@@ -103,10 +103,11 @@ class UNet():
             dilate5 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=16)(b10)
             b11 = BatchNormalization()(dilate5)
             dilate6 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=32)(b11)
-
-            dilate_all_added = add([dilate1, dilate2, dilate3, dilate4, dilate5, dilate6])
-
-            up3 = UpSampling2D((2, 2))(dilate_all_added)
+            if addition == 1:
+                dilate_all_added = add([dilate1, dilate2, dilate3, dilate4, dilate5, dilate6])
+                up3 = UpSampling2D((2, 2))(dilate_all_added)
+            else:
+                up3 = UpSampling2D((2, 2))(dilate6)
         else:
             dilate1 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=1)(down3pool)
             b7 = BatchNormalization()(dilate1)
@@ -119,8 +120,11 @@ class UNet():
             dilate5 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=16)(b10)
             b11 = BatchNormalization()(dilate5)
             dilate6 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=32)(b11)
-            dilate_all_added = add([dilate1, dilate2, dilate3, dilate4, dilate5, dilate6])
-            up3 = UpSampling2D((2, 2))(dilate_all_added)
+            if addition ==1:
+                dilate_all_added = add([dilate1, dilate2, dilate3, dilate4, dilate5, dilate6])
+                up3 = UpSampling2D((2, 2))(dilate_all_added)
+            else:
+                up3 = UpSampling2D((2, 2))(dilate6)
         up3 = Conv2D(88,3, activation='relu', padding='same')(up3)
         up3 = concatenate([down3, up3])
         b12 = BatchNormalization()(up3)
@@ -207,6 +211,7 @@ if __name__ == "__main__":
     arg_list.add_argument('--dilate', help='Add dilated convolutions', default='1', type=int)
     arg_list.add_argument('--weight_path', help='path to save weights', default='weights/dilated_unet', type=str)
     arg_list.add_argument('--dilate_rate', help='rate of dilation in downsampling convs', default='1', type=int)
+    arg_list.add_argument('--addition', help='add the central layers together as a concat operation', default='1', type=int)
     arg_list.add_argument('--gpu', help='specify the GPU to use', default='0', type=str)
 
     args = vars(arg_list.parse_args())
@@ -220,6 +225,7 @@ if __name__ == "__main__":
     dilate = args['dilate']
     dilate_rate = args['dilate_rate']
     weight_path = args['weight_path']
+    addition = args['addition']
     gpu = args['gpu']
     os.environ["CUDA_VISIBLE_DEVICES"] = gpu
     model_init = UNet()
@@ -228,5 +234,5 @@ if __name__ == "__main__":
 
     (X_val, Y_val) = model_init.load_data(nb_cols=6,nb_rows=5,
     image_path=image_path,mask_path=mask_path)
-    model_init.compile(classes=2,dilate=dilate,dilate_rate=dilate_rate)
+    model_init.compile(addition=addition,classes=2,dilate=dilate,dilate_rate=dilate_rate)
     model_init.train(lr=lr,max_lr=max_lr,weight_path=weight_path)
