@@ -92,22 +92,26 @@ class UNet():
         down3pool = MaxPooling2D((2, 2), strides=(2, 2))(down3)
         down3pool = Dropout(rate=0.3)(down3pool)
 
+        if dilate == 1:
         # stacked dilated convolution at the bottleneck
-        dilate1 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=1)(down3pool)
-        b7 = BatchNormalization()(dilate1)
-        dilate2 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=2)(b7)
-        b8 = BatchNormalization()(dilate2)
-        dilate3 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=4)(b8)
-        b9 = BatchNormalization()(dilate3)
-        dilate4 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=8)(b9)
-        b10 = BatchNormalization()(dilate4)
-        dilate5 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=16)(b10)
-        b11 = BatchNormalization()(dilate5)
-        dilate6 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=32)(b11)
+            dilate1 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=1)(down3pool)
+            b7 = BatchNormalization()(dilate1)
+            dilate2 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=2)(b7)
+            b8 = BatchNormalization()(dilate2)
+            dilate3 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=4)(b8)
+            b9 = BatchNormalization()(dilate3)
+            dilate4 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=8)(b9)
+            b10 = BatchNormalization()(dilate4)
+            dilate5 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=16)(b10)
+            b11 = BatchNormalization()(dilate5)
+            dilate6 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=32)(b11)
 
-        dilate_all_added = add([dilate1, dilate2, dilate3, dilate4, dilate5, dilate6])
+            dilate_all_added = add([dilate1, dilate2, dilate3, dilate4, dilate5, dilate6])
 
-        up3 = UpSampling2D((2, 2))(dilate_all_added)
+            up3 = UpSampling2D((2, 2))(dilate_all_added)
+        else:
+            dilate1 = Conv2D(176,3, activation='relu', padding='same')(down3pool)
+            up3 = UpSampling2D((2, 2))(dilate1)
         up3 = Conv2D(88,3, activation='relu', padding='same')(up3)
         up3 = concatenate([down3, up3])
         b12 = BatchNormalization()(up3)
@@ -147,13 +151,13 @@ class UNet():
         gen_val = self.batch_generator(imgs=X_val, msks=Y_val, batch_size=3)
         clr_triangular = CyclicLR(mode='triangular')
         clr_triangular._reset(new_base_lr=lr, new_max_lr=max_lr)
-        cb = [clr_triangular,EarlyStopping(monitor='val_loss', min_delta=1e-3, 
+        cb = [clr_triangular,EarlyStopping(monitor='val_loss', min_delta=1e-3,
         patience=300, verbose=1, mode='min'),
             ModelCheckpoint('weights/' + 'U-net.weights',
             monitor='val_loss', save_best_only=True, verbose=1),
-            TensorBoard(log_dir='./logs',write_grads=True, batch_size=3, 
+            TensorBoard(log_dir='./logs', histogram_freq=10,write_grads=True, batch_size=3,
             write_graph=True, write_images=True)]
-    
+
         self.net.fit_generator(generator=gen_trn, steps_per_epoch=10, epochs=epochs,
                                validation_data=gen_val, validation_steps=10, verbose=1, callbacks=cb)
 
@@ -191,6 +195,7 @@ if __name__ == "__main__":
     arg_list.add_argument('--max_lr', help='Learning rate', default='0.0005', type=float)
     arg_list.add_argument('--image_path', help='Path to stack of training images', default='images', type=str)
     arg_list.add_argument('--mask_path', help='Path to stack of ground truth annotations', default='masks', type=str)
+    arg_list.add_argument('--dilate', help='Add dilated convolutions', default='1', type=int)
 
     args = vars(arg_list.parse_args())
 
@@ -200,7 +205,7 @@ if __name__ == "__main__":
     classes = args['classes']
     image_path = args['image_path']
     mask_path = args['mask_path']
-
+    dilate = args['dilate']
     model_init = UNet()
     (X_train, Y_train) = model_init.load_data(nb_cols=5,nb_rows=6,
     image_path=image_path,mask_path=mask_path)
