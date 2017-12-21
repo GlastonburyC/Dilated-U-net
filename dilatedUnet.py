@@ -190,6 +190,25 @@ class UNet():
                                validation_data=gen_val, validation_steps=10, verbose=1, callbacks=cb)
 
         return
+    
+    def random_transforms(items, nb_min=0, nb_max=5, rng=np.random):
+
+        all_transforms = [
+            lambda x: x,
+            lambda x: np.fliplr(x),
+            lambda x: np.flipud(x),
+            lambda x: np.rot90(x, 1),
+            lambda x: np.rot90(x, 2),
+            lambda x: np.rot90(x, 3),
+        ]
+
+        n = rng.randint(nb_min, nb_max + 1)
+        items_t = [item.copy() for item in items]
+        for _ in range(n):
+            idx = rng.randint(0, len(all_transforms))
+            transform = all_transforms[idx]
+            items_t = [transform(item) for item in items_t]
+        return items_t
 
     def batch_generator(self, imgs, msks, batch_size,transform=True):
 
@@ -210,7 +229,10 @@ class UNet():
 
                 img_batch[batch_idx] = imgs[y0:y1, x0:x1]
                 msk_batch[batch_idx] = msks[y0:y1, x0:x1]
-
+                if transform:
+                    [img_tmp, msk_tmp] = self.random_transforms([img_batch[batch_idx], msk_batch[batch_idx]])
+                img_batch[batch_idx] = img_tmp
+                msk_batch[batch_idx] = msk_tmp
             img_batch = normalize(img_batch)
             yield img_batch, msk_batch
 
