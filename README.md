@@ -1,5 +1,9 @@
 # Dilated-U-net - Stacked Electron Microscopy (EM) segmentation.
 
+*The training and test datasets are two stacks of 30 sections from a serial section Transmission Electron Microscopy (ssTEM) data set of the Drosophila first instar larva ventral nerve cord (VNC). The microcube measures 2 x 2 x 1.5 microns approx., with a resolution of 4x4x50 nm/pixel.*
+
+
+
 | Model            | Training Loss | Validation Loss | Training Dice | Validation Dice |
 |------------------|---------------|-----------------|---------------|-----------------|
 | U-net            | 0.056         | 0.106           | 0.985         | 0.979           |
