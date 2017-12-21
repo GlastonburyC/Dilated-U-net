@@ -8,14 +8,15 @@
 |------------------|---------------|-----------------|---------------|-----------------|
 | U-net            | 0.056         | 0.106           | 0.985         | 0.979           |
 | Dilated U-net    | 0.057         | 0.111           | 0.985         | 0.978           |
-| U-net A*         | 0.073         | 0.0864          | 0.981         | 0.980           |
-| Dilated U-net A* | 0.0579        | 0.114           | 0.985         | 0.978           |
+| U-net A          | 0.073         | 0.0864          | 0.981         | 0.980           |
+| Dilated U-net A  | 0.0579        | 0.114           | 0.985         | 0.978           |
 
-A* represents the central part of the U-net having no concatenate *add* operation. (--addition 0)
+A - represents the central part of the U-net having no concatenate *add* operation. (--addition 0)
 
 **Training images and masks**
 
 <img src="images/train.gif" alt="Training images" width="512" height="256"/>
+
 **Test time images and predictions**
 
 <img src="images/test.gif" alt="Predicted labels" width="512" height="256"/>
