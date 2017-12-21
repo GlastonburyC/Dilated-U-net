@@ -7,7 +7,7 @@
 | U-net A*         | 0.073         | 0.0864          | 0.981         | 0.980           |
 | Dilated U-net A* | 0.0579        | 0.114           | 0.985         | 0.978           |
 
-A* represents the central part of the U-net having an additional concatenate add operation.
+A* represents the central part of the U-net having no concatenate *add* operation. (--addition 0)
 
 <img src="images/train-volume-p1c1pmolsqq5ugdl17011cu4skf.gif" alt="Training images" width="256" height="256"/><img src="images/train-labels-p1c1pngvp9u1148fmnh1i8o5dq.gif" alt="Ground truth labels" width="256" height="256"/>
 
