@@ -3,7 +3,7 @@ np.random.seed(865)
 
 from keras.models import Model
 from keras.layers import Input, BatchNormalization, merge, Conv2D, MaxPooling2D, UpSampling2D
-from keras.layers import  Dropout, concatenate, Conv2DTranspose, Lambda, Reshape
+from keras.layers import  Dropout, concatenate, Conv2DTranspose, Lambda, Reshape, Dropout
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 from keras.utils.np_utils import to_categorical
@@ -75,18 +75,23 @@ class UNet():
         b1 = Dropout(rate=0.3)(b1)
         down1 = Conv2D(44, 3, activation='relu', padding='same',dilation_rate=dilate_rate)(b1)
         b2 = BatchNormalization()(down1)
+        b2 = Dropout(rate=0.3)(b2)
         down1pool = MaxPooling2D((2, 2), strides=(2, 2))(b2)
         down1pool = Dropout(rate=0.3)(down1pool)
         down2 = Conv2D(88, 3, activation='relu', padding='same')(down1pool)
         b3 = BatchNormalization()(down2)
+        b3 = Dropout(rate=0.3)(b3)
         down2 = Conv2D(88, 3, activation='relu', padding='same',dilation_rate=dilate_rate)(b3)
         b4 = BatchNormalization()(down2)
+        b4 = Dropout(rate=0.3)(b4)
         down2pool = MaxPooling2D((2,2), strides=(2, 2))(b4)
         down2pool = Dropout(rate=0.3)(down2pool)
         down3 = Conv2D(176, 3, activation='relu', padding='same')(down2pool)
         b5 = BatchNormalization()(down3)
+        b5 = Dropout(rate=0.3)(b5)
         down3 = Conv2D(176, 3, activation='relu', padding='same',dilation_rate=dilate_rate)(b5)
         b6 = BatchNormalization()(down3)
+        b6 = Dropout(rate=0.3)(b6)
         down3pool = MaxPooling2D((2, 2), strides=(2, 2))(b6)
         down3pool = Dropout(rate=0.3)(down3pool)
 
@@ -94,14 +99,19 @@ class UNet():
         # stacked dilated convolution at the bottleneck
             dilate1 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=1)(down3pool)
             b7 = BatchNormalization()(dilate1)
+            b7 = Dropout(rate=0.3)(b7)
             dilate2 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=2)(b7)
             b8 = BatchNormalization()(dilate2)
+            b8 = Dropout(rate=0.3)(b8)
             dilate3 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=4)(b8)
             b9 = BatchNormalization()(dilate3)
+            b9 = Dropout(rate=0.3)(b9)
             dilate4 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=8)(b9)
             b10 = BatchNormalization()(dilate4)
+            b10 = Dropout(rate=0.3)(b10)
             dilate5 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=16)(b10)
             b11 = BatchNormalization()(dilate5)
+            b11 = Dropout(rate=0.3)(b11)
             dilate6 = Conv2D(176,3, activation='relu', padding='same', dilation_rate=32)(b11)
             if addition == 1:
                 dilate_all_added = add([dilate1, dilate2, dilate3, dilate4, dilate5, dilate6])
@@ -111,14 +121,19 @@ class UNet():
         else:
             dilate1 = Conv2D(176,3, activation='relu', padding='same')(down3pool)
             b7 = BatchNormalization()(dilate1)
+            b7 = Dropout(rate=0.3)(b7)
             dilate2 = Conv2D(176,3, activation='relu', padding='same')(b7)
             b8 = BatchNormalization()(dilate2)
+            b8 = Dropout(rate=0.3)(b8)
             dilate3 = Conv2D(176,3, activation='relu', padding='same')(b8)
             b9 = BatchNormalization()(dilate3)
+            b9 = Dropout(rate=0.3)(b9)
             dilate4 = Conv2D(176,3, activation='relu', padding='same')(b9)
             b10 = BatchNormalization()(dilate4)
+            b10 = Dropout(rate=0.3)(b10)
             dilate5 = Conv2D(176,3, activation='relu', padding='same')(b10)
             b11 = BatchNormalization()(dilate5)
+            b11 = Dropout(rate=0.3)(b11)
             dilate6 = Conv2D(176,3, activation='relu', padding='same')(b11)
             if addition ==1:
                 dilate_all_added = add([dilate1, dilate2, dilate3, dilate4, dilate5, dilate6])
