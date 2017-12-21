@@ -9,7 +9,7 @@
 
 A* represents the central part of the U-net having no concatenate *add* operation. (--addition 0)
 
-<img src="images/train-volume-p1c1pmolsqq5ugdl17011cu4skf.gif" alt="Training images" width="256" height="256"/><img src="images/train-labels-p1c1pngvp9u1148fmnh1i8o5dq.gif" alt="Ground truth labels" width="256" height="256"/>
+<img src="images/train-volume-p1c1pmolsqq5ugdl17011cu4skf.gif" alt="Training images" width="256" height="256"/><img src="images/train-labels-p1c1pngvp9u1148fmnh1i8o5dq.gif" alt="Ground truth labels" width="256" height="256"/><img src="images/test_preds-p1c1sgevt71rc2hrpb0n16g81mtm.gif" alt="Predicted labels" width="256" height="256"/>
 
 Dilated/Atrous convolutions have the ability to increase the receptive field of a network expontentially. Therefore, whilst segmentation requires fine-grain classification accuracy (pixel-wise level), the ability of a network to learn features based on a wide receptive field capturing alot of the input space could be beneficial.
 
