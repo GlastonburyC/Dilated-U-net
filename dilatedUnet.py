@@ -1,3 +1,6 @@
+# inspired by Jocic's Kaggle U-net and my previous Kaggle segmentation challenge (Carvana).
+# https://github.com/jocicmarko/ultrasound-nerve-segmentation
+
 import numpy as np
 np.random.seed(865)
 
