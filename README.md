@@ -2,7 +2,7 @@
 
 *The training and test datasets are two stacks of 30 sections from a serial section Transmission Electron Microscopy (ssTEM) data set of the Drosophila first instar larva ventral nerve cord (VNC). The microcube measures 2 x 2 x 1.5 microns approx., with a resolution of 4x4x50 nm/pixel.*
 
-
+Networks had approximately 2.7 Million parameters to be learnt.
 
 | Model            | Training Loss | Validation Loss | Training Dice | Validation Dice |
 |------------------|---------------|-----------------|---------------|-----------------|
