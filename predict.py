@@ -8,7 +8,7 @@ keras.losses.bce_dice_loss = bce_dice_loss
 keras.metrics.dice_coef = dice_coef
 import numpy as np
 import mahotas as mh
-from matplotlib.image import imsave
+from tifffile import imsave
 
 model = load_model('weights/normal_unet_noadd.weights')
 
