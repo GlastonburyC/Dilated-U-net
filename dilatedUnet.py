@@ -213,10 +213,7 @@ class UNet():
 
                 img_batch[batch_idx] = imgs[y0:y1, x0:x1]
                 msk_batch[batch_idx] = msks[y0:y1, x0:x1]
-                if transform:
-                    [img_tmp, msk_tmp] = self.random_transforms([img_batch[batch_idx], msk_batch[batch_idx]])
-                img_batch[batch_idx] = img_tmp
-                msk_batch[batch_idx] = msk_tmp
+
             img_batch = normalize(img_batch)
             yield img_batch, msk_batch
 
